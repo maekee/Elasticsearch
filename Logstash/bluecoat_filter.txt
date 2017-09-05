@@ -1,6 +1,7 @@
 #I have created the the filter section below to parse bluecoat proxy logs
 #first if removes rows that begin with #
 #second if parses message field if type is bluecoat, which is provided as document_type in filebeat config
+#third, gets its timestamp from bc_date
 
 filter {
   if ([message] =~ /^#/) {
@@ -9,6 +10,9 @@ filter {
   if [type] == "bluecoat" {
     grok {
       match => { "message" => "^%{TIMESTAMP_ISO8601:bc_date} %{NUMBER:bc_time_taken} %{IP:bc_c_ip} %{NOTSPACE:bc_cs_username} %{NOTSPACE:bc_cs_auth_group} %{NOTSPACE:bc_s_supplier_name} %{NOTSPACE:bc_s_supplier_ip} %{NOTSPACE:bc_s_supplier_country} %{NOTSPACE:bc_s_supplier_failures} %{NOTSPACE:bc_x_exception_id} %{NOTSPACE:bc_sc_filter_result} %{QUOTEDSTRING:bc_cs_categories} %{NOTSPACE:bc_cs_Referer}  %{NOTSPACE:bc_cs_status} %{NOTSPACE:bc_s_action} %{NOTSPACE:bc_cs_method} %{NOTSPACE:bc_rs_Content-Type} %{NOTSPACE:bc_cs_uri_scheme} %{NOTSPACE:bc_cs_host} %{NOTSPACE:bc_cs_uri_port} %{NOTSPACE:bc_cs_uri_path} %{NOTSPACE:bc_cs_uri_query} %{NOTSPACE:bc_cs_uri_extension} (?<bc_cs_User_Agent>(\".*\")|-) %{IP:bc_s_ip} %{NUMBER:bc_sc_bytes} %{NUMBER:bc_cs_bytes} %{NOTSPACE:bc_x_virus_id} %{QUOTEDSTRING:bc_x_bluecoat_application_name} %{QUOTEDSTRING:bc_x_bluecoat_application_operation} %{NUMBER:bc_cs_threat_risk} %{NOTSPACE:bc_x_bluecoat_transaction_uuid} %{NOTSPACE:bc_x_icap_reqmod_header_XICAPMetadata} %{NOTSPACE:bc_x_icap_respmod_header_XICAPMetadata} %{NOTSPACE:bc_cs_auth_type} %{NOTSPACE:bc_x_auth_credential_type}" }
+    }
+    date {
+      match => [ "bc_date", "yyyy-MM-dd HH:mm:ss" ]
     }
   }
 }
