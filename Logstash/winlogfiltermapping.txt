@@ -1,0 +1,18 @@
+#This is a mapping i created to test out translating microsoft hex codes to user friendly messages in a new field.
+
+filter {
+  if [type] == "wineventlog" {
+    if [event_data][Status] == "0xc0000064" { mutate { add_field => { "Log_CodeMsg" => "USER_NOT_FOUND" } } }
+    if [event_data][Status] == "0xc0000133" { mutate { add_field => { "Log_CodeMsg" => "DC_AND_CLIENT_CLOCK_NOT_IN_SYNC" } } }
+    if [event_data][Status] == "0xc0000224" { mutate { add_field => { "Log_CodeMsg" => "USER_REQUIRED_TO_CHANGE_PASS_NEXT_LOGON" } } }
+    if [event_data][Status] == "0xc0000234" { mutate { add_field => { "Log_CodeMsg" => "USER_LOCKED_OUT" } } }
+    if [event_data][Status] == "0xc000015b" { mutate { add_field => { "Log_CodeMsg" => "USER_NOT_GRANTED_LOGON_RIGHT" } } }
+    if [event_data][Status] == "0xc00002ee" { mutate { add_field => { "Log_CodeMsg" => "LOGON_FAILURE_OCCURRED" } } }
+    if [event_data][Status] == "0xc0000193" { mutate { add_field => { "Log_CodeMsg" => "USER_LOCKED_OUT" } } }
+    if [event_data][Status] == "0xc000005e" { mutate { add_field => { "Log_CodeMsg" => "NO_LOGON_SERVERS_AVAILABLE_TO_ANSWER" } } }
+    if [event_data][Status] == "0xc000006d" { mutate { add_field => { "Log_CodeMsg" => "BAD_USER_OR_AUTH_INFO" } } }
+    if [event_data][Status] == "0xc000006e" { mutate { add_field => { "Log_CodeMsg" => "UNKNOWN_USER_OR_BAD_PASSWORD" } } }
+    if [event_data][Status] == "0xc000006f" { mutate { add_field => { "Log_CodeMsg" => "USER_OUTSIDE_LOGON_HOURS" } } }
+    if [event_data][Status] == "0XC0000071" { mutate { add_field => { "Log_CodeMsg" => "USER_HAVE_EXPIRED_PASS" } } }
+  }
+}
