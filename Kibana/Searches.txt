@@ -1,0 +1,11 @@
+#Working Kibana search filters
+
+#This filter uses the regexp query to find only LogonName matching below regex filter
+#We use this to filter out computer authentication in DirectAccess events.
+{
+  "query": {
+    "regexp": {
+      "LogonName": "DOMAINNAME.[a-zA-Z]{5}"
+    }
+  }
+}
