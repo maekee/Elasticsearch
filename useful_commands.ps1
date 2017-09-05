@@ -5,7 +5,6 @@ Get-Content -Path C:\Logstash\logs\logstash-plain.log | Select -Last 20
 
 #When troubleshooting/developing logstash filters for filebeat i use these commands to generate new data:
 #The path D:\LOGS in my case is where filebeat looks for new logs
-Remove-Item "D:\LOGS\*" -Force
 Copy-Item "D:\templateLog.log" "D:\LOGS\NewLog_$(Get-Date -format "yyyy-MM-dd-HHmmss").log"
 
 #If you want to use winlogbeat and read in a channel (a named stream of events that transports events from an event source to an event log)
