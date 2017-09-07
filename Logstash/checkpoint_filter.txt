@@ -2,18 +2,22 @@
 #first if removes rows that begin with num;date;time (which is first row with column names)
 #second splits columns by semi-colon and supplies named columns with prefix chk (checkpoint) and removes empty fields missing values
 #the mutate part adds a temporary field with date and time which the date filter parses
-#last part is to remove the temporary datetime field i called TMP_timestamp
+#last part is to remove the temporary datetime field and the original date and time fields
 
 if [type] == "checkpoint" {
   if ([message] =~ /^num;date;time/) { drop{} }
-  csv {
-    columns => ["chk_num","chk_date","chk_time","chk_orig","chk_type","chk_action","chk_alert","chk_if_name","chk_if_dir","chk_product","chk_log_sys_message","chk_origin_id","chk_ProductFamily","chk_inzone","chk_outzone","chk_rule","chk_rule_uid","chk_rule_name","chk_src","chk_dst","chk_proto","chk_service","chk_s_port","chk_service_id","chk_ICMP","chk_ICMPType","chk_ICMPCode","chk_message_info","chk_DCE-RPCInterfaceUUID","chk_rule_guid","chk_hit","chk_policy","chk_first_hit_time","chk_last_hit_time","chk_log_id","chk_description","chk_status","chk_version","chk_comment","chk_update_service","chk_xlatesrc","chk_xlatedst","chk_NAT_rulenum","chk_NAT_addtnl_rulenum","chk_xlatedport","chk_xlatesport","chk_Logdelay"]
+    csv {
+    columns => ["chk_num","chk_date","chk_time","chk_orig","chk_type","chk_action","chk_alert","chk_if_name","chk_if_dir","chk_product","chk_log_sys_message","chk_origin_id","chk_ProductFamily","chk_inzone","chk_outzone","chk_rule","chk_rule_uid","chk_rule_name","chk_service_id","chk_src","chk_dst","chk_proto","chk_service","chk_s_port","chk_ICMP","chk_ICMPType","chk_ICMPCode","chk_message_info","chk_DCE-RPCInterfaceUUID","chk_rule_guid","chk_hit","chk_policy","chk_first_hit_time","chk_last_hit_time","chk_log_id","chk_Logdelay","chk_description","chk_status","chk_version","chk_comment","chk_update_service","chk_xlatesrc","chk_xlatedst","chk_NAT_rulenum","chk_NAT_addtnl_rulenum","chk_xlatedport","chk_xlatesport","chk_reason","chk_Severity","chk_failure_impact","chk_Internal_CA","chk_serial_num","chk_dn"]
     separator => ";"
     skip_empty_columns => true
   }
-  mutate { add_field => { "TMP_timestamp" => "%{chk_date} %{chk_time}" } }
+  mutate {
+    add_field => { "TMP_timestamp" => "%{chk_date} %{chk_time}" }
+  }
   date {
     match => [ "TMP_timestamp", "dMMMyyyy HH:mm:ss" ]
     remove_field => ["TMP_timestamp"]
+    remove_field => ["chk_date"]
+    remove_field => ["chk_time"]
   }
-}
+ }
