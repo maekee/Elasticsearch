@@ -20,7 +20,18 @@ Function Get-ElasticSearchCat{
         else{$fullUri = "$($fullUri)?v"}
     }
 
-    $response = Invoke-WebRequest -Uri $FullUri -Method Get -ContentType 'application/json'
+    try{ $response = Invoke-WebRequest -Uri $FullUri -Method Get -ContentType 'application/json' -ErrorAction Stop }
+    catch{
+        if($CatType -eq 'snapshots' -and $_.ErrorDetails.message -match "repository is missing"){
+            Write-Warning "No snapshot repositories found"
+        }
+        else{
+            $ErrorObj = ConvertFrom-Json -InputObject $_.ErrorDetails.message
+            Write-Warning "Status: $($ErrorObj.status)"
+            Write-Warning "Reason: $($ErrorObj.error.reason)"
+        }
+        break
+    }
     $response.Content
 }
 
