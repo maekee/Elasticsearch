@@ -63,17 +63,21 @@ Function Get-ElasticSearchStats{
 }
 
 #PowerShell function that retrieves ES index, with regexfilter support
- Function Get-ElasticSearchIndex {
+Function Get-ElasticSearchIndex {
     param (
         $ElasticSearchUri = 'http://localhost:9200',
         $Filter,
+        [switch]$OnlyIndexName,
         [switch]$IncludeKibanaIndex
     )
 
-    $output = Invoke-WebRequest -Method Get -Uri "${ElasticSearchUri}/_cat/indices?v=pretty" -ContentType application/json
-    $output = $output.Content.Split("`n")
-    if(!($IncludeKibanaIndex)){ $output = $output | Where {$_ -ne ".kibana"} }
+    if($OnlyIndexName){$UrlTail = '?h=index'}
+    else{$UrlTail = '?v=pretty'}
+
+    $output = Invoke-WebRequest -Method Get -Uri "${ElasticSearchUri}/_cat/indices${UrlTail}" -ContentType application/json
+    $output = $output.Content.Split("`n") | Sort
+    if(!($IncludeKibanaIndex)){ $output = $output | Where {$_ -notmatch ".kibana"} }
     
     if($Filter){ $output | Where {$_ -match $Filter} }
     else{$output}
-} 
+}
