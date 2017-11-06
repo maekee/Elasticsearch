@@ -30,3 +30,15 @@
     }
   }
 }
+
+#Last hour
+{
+  "query": {
+    "range": {
+      "@timestamp": {
+        "gte": "now-1h",
+        "lt": "now"
+      }
+    }
+  }
+}
