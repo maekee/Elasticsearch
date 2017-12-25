@@ -16,6 +16,3 @@ $body = @{
 $jsonbody = $body | ConvertTo-Json
 
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:9200/_snapshot/esbackup01' -ContentType 'application/json' -Body $jsonbody
-
-#Verify Repository created
-Invoke-ElasticSearchRequest -Method Get -Uri 'http://127.0.0.1:9200/_snapshot/'
