@@ -3,7 +3,8 @@
 #This filter uses the regexp query to find only LogonName matching below regex filter#We use this to filter out computer authentication in DirectAccess events.
 {  "query": {    "regexp": {      "LogonName": "DOMAINNAME.[a-zA-Z]{5}"    }  }}
 
-#This filter uses the bool filter and regexp filter query types to find Events where#event_data.SubjectUserName is Spiderman AND event_data.TargetUserName does not end with $
+#This filter uses the bool filter and regexp filter query types to find Events where
+#event_data.SubjectUserName is Spiderman AND event_data.TargetUserName does not end with $
 {  "query": {    "bool": {      "must": {        "match": {          "event_data.SubjectUserName": "Spiderman"        }      },      "filter": {        "regexp": {          "event_data.TargetUserName": {            "value": ".*~$"          }        }      }    }  }}
 
 #Last hour
