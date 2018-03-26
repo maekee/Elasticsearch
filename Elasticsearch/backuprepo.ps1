@@ -16,3 +16,6 @@ $body = @{
 $jsonbody = $body | ConvertTo-Json
 
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:9200/_snapshot/esbackup01' -ContentType 'application/json' -Body $jsonbody
+
+#This line will remove the repo
+Invoke-RestMethod -Method Delete -Uri 'http://localhost:9200/_snapshot/repositoryName'
