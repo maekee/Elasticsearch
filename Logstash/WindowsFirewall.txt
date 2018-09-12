@@ -1,0 +1,20 @@
+#Filter section below looks after custom tag winFWtag from Filebeat.
+
+filter {
+  if "winFWtag" in [tags] {
+    csv {
+      columns => ["wfw_date","wfw_time","action","protocol","src-ip","dst-ip","src-port","dst-port","size","tcpflags","tcpsyn","tcpack","tcpwin","icmptype","icmpcode","info","path"]
+      separator => " "
+      skip_empty_rows => true
+    }
+    mutate {
+      add_field => { "TMP_timestamp" => "%{wfw_date} %{wfw_time}" }
+    }
+    date {
+      match => [ "TMP_timestamp", "yyyy-MM-dd HH:mm:ss" ]
+      remove_field => ["TMP_timestamp"]
+      remove_field => ["wfw_date"]
+      remove_field => ["wfw_time"]
+    }
+  }
+}
