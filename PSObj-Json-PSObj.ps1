@@ -8,6 +8,7 @@ $searchBody = @{
   }
   "size" = 100
 } | ConvertTo-Json
+#If you want arrays in Json, you use @()
 
 #Create PSObject from Json
 $PSObj = @'
