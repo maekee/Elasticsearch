@@ -1,0 +1,26 @@
+<#
+First of all, i have configured filebeat to tag the netlogon.log path with the tag netlogon, in this way i catch it here.
+Maybe there are better ways to handle this so i dont have to throw away the fields. Will look into that if i have time
+Example of a netlogon log:
+10/17 21:10:08 [LOGON] [11780] DOMAINX: SamLogon: Transitive Network logon of DOMAINX\SamAccountName1 from COMPUTER7 (via COMPUTER8) Entered
+#>
+
+filter {
+  if "netlogon" in [tags] {
+    grok {
+      match => { "message" => "%{MONTHNUM:nl_month}/%{MONTHDAY:nl_day} %{HOUR:nl_hour}:%{MINUTE:nl_minute}:%{SECOND:nl_second} \[%{WORD:netlogon.eventtype}\] \[%{WORD:netlogon.processid}\] %{GREEDYDATA:netlogon.data}" }
+    }
+    mutate {
+      add_field => { "TMP_timestamp" => "%{nl_month} %{nl_day} %{nl_hour}:%{nl_minute}:%{nl_second}" }
+    }
+    date {
+      match => [ "TMP_timestamp", "MM dd HH:mm:ss" ]
+      remove_field => ["TMP_timestamp"]
+      remove_field => ["nl_month"]
+      remove_field => ["nl_day"]
+      remove_field => ["nl_hour"]
+      remove_field => ["nl_minute"]
+      remove_field => ["nl_second"]
+    }
+  }
+}
