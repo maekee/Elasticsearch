@@ -1,0 +1,18 @@
+#Here i have a conditional statement in the logstash output.
+#Events is coming from beat agents and i want to handle indices from domain controllers with different retention
+
+output {
+  if "dc" in [tags] {
+    elasticsearch {
+      hosts => "elasticsearch:9200"
+      manage_template => false
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}-dc-%{+YYYY.MM.dd}"
+    }
+  } else {
+    elasticsearch {
+      hosts => "elasticsearch:9200"
+      manage_template => false
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+    }
+  }
+}
