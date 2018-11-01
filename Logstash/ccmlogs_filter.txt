@@ -1,0 +1,23 @@
+#This filter will structure up the ccm logs (from filebeat) that matches the below filter
+#The one thing i have left is to format seconds so its
+#Sample log: <![LOG[Process ID 1234 is for process C:\GoogleUpdate.exe]LOG]!><time="02:07:24.679-60" date="11-01-2018" component="mtrmgr" context="" type="1" thread="6008" file="processdata.cpp:142">
+
+#What i have left is to format the seconds from nn to nn.nnn-nn (example time="02:07:24.679-60")
+
+if "ccmlog" in [tags] {
+  grok {
+    match => { "message" => "^<!\[LOG\[(?<ccm_message>(.|\r|\n)*)\]LOG\]!><time=\"%{HOUR:ccm_hour}:%{MINUTE:ccm_min}:%{SECOND:ccm_sec}\.%{DATA}\"%{SPACE}date=\"%{MONTHDAY:ccm_month}-%{MONTHDAY:ccm_day}-%{YEAR:ccm_year}\"%{SPACE}component=\"%{WORD:ccm_component}\"%{SPACE}context=\"\"%{SPACE}type=\"%{NUMBER:ccm_type}\"%{SPACE}thread=\"%{NUMBER:ccm_thread}\"%{SPACE}file=\"%{DATA:ccm_filename}\""}
+  }
+  mutate {
+    add_field => { "TMP_timestamp" => "%{ccm_year}-%{ccm_month}-%{ccm_day} %{ccm_hour}:%{ccm_min}:%{ccm_sec}" }
+  }
+  date {
+    match => [ "TMP_timestamp", "yyyy-MM-dd HH:mm:ss" ]
+      remove_field => ["ccm_year"]
+      remove_field => ["ccm_month"]
+      remove_field => ["ccm_day"]
+      remove_field => ["ccm_hour"]
+      remove_field => ["ccm_min"]
+      remove_field => ["ccm_sec"]
+  }
+}
