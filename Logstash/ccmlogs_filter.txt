@@ -1,8 +1,10 @@
-#This filter will structure up the ccm logs (from filebeat) that matches the below filter
-#The one thing i have left is to format seconds so its
+#UPDATE 18/11 2018, i just saw that the ccm log timestamp can have three formats, examples below.
+#time="20:12:28.6175625" date="11-17-2018"
+#time="20:52:48.105-60" date="11-17-2018"
+#time="09:14:31.509-120" date="08-29-2018"
+#As you see, the part after the seconds differ. So my filter is not ready yet, below is a sample log for the -60 example:
 #Sample log: <![LOG[Process ID 1234 is for process C:\GoogleUpdate.exe]LOG]!><time="02:07:24.679-60" date="11-01-2018" component="mtrmgr" context="" type="1" thread="6008" file="processdata.cpp:142">
-
-#What i have left is to format the seconds from nn to nn.nnn-nn (example time="02:07:24.679-60")
+#At the moment i stop parsing after the seconds (.%{DA)TA})
 
 if "ccmlog" in [tags] {
   grok {
