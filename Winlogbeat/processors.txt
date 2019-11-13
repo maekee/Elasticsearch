@@ -1,0 +1,7 @@
+#Code below is a few examples of processors that can be used in winlogbeat.yml
+
+#Adds the tag applocker if the winlog providername is applocker 
+- add_tags:
+    tags: [applocker]
+    when.equals:
+      winlog.provider_name: "Microsoft-Windows-AppLocker"
