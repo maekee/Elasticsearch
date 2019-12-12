@@ -1,23 +1,57 @@
-#I have created the the filter section below to parse bluecoat proxy checkpoint logs
-#first if removes rows that begin with num;date;time (which is first row with column names)
-#second splits columns by semi-colon and supplies named columns with prefix chk (checkpoint) and removes empty fields missing values
-#the mutate part adds a temporary field with date and time which the date filter parses
-#last part is to remove the temporary datetime field and the original date and time fields
+#Here is a logstash filter that works for us when parsing syslog messages from our Checkpoint firewall (R80.30).
+#Because the firewall have several functions/products (for example IPS) the events can be completely different, not only
+#by name but also number of fields. But i found a pattern that works for us in which includes most of the data betweeen [ and ].
+#I add the type checkpointfirewall in the tcp input plugin, that i can pick up in the filter plugin.
+#In the end i am trying to be elasticsearch common schema compliant, by adding and renaming fields to match recommendations.
 
-if [type] == "checkpoint" {
-  if ([message] =~ /^num;date;time/) { drop{} }
-    csv {
-    columns => ["chk_num","chk_date","chk_time","chk_orig","chk_type","chk_action","chk_alert","chk_if_name","chk_if_dir","chk_product","chk_log_sys_message","chk_origin_id","chk_ProductFamily","chk_inzone","chk_outzone","chk_rule","chk_rule_uid","chk_rule_name","chk_service_id","chk_src","chk_dst","chk_proto","chk_service","chk_s_port","chk_ICMP","chk_ICMPType","chk_ICMPCode","chk_message_info","chk_DCE-RPCInterfaceUUID","chk_rule_guid","chk_hit","chk_policy","chk_first_hit_time","chk_last_hit_time","chk_log_id","chk_Logdelay","chk_description","chk_status","chk_version","chk_comment","chk_update_service","chk_xlatesrc","chk_xlatedst","chk_NAT_rulenum","chk_NAT_addtnl_rulenum","chk_xlatedport","chk_xlatesport","chk_reason","chk_Severity","chk_failure_impact","chk_Internal_CA","chk_serial_num","chk_dn"]
-    separator => ";"
-    skip_empty_columns => true
+filter {
+  if [type] == "checkpointfirewall" {
+    mutate {
+      gsub => ["message", "\"",""]
+      add_tag => [ "firewall" ]
+    }
+    grok {
+      match => {
+        "message" => "^<[0-9]{0,5}>[0-9]{0,2} %{TIMESTAMP_ISO8601:tmp_timestamp} %{SYSLOGHOST:syslog_hostname} [0-9a-zA-Z\s]{10,25}- \[%{GREEDYDATA:tmp_message} \]"
+      }
+    }
+    kv {
+      source => "tmp_message"
+      target => "firewall"
+      field_split => ";"
+      value_split => ":"
+      trim_key => " "
+    }
+    date {
+      id => "firewall_parse_date"
+      match => [ "tmp_timestamp", "MMM dd HH:mm:ss", "ISO8601" ]
+    }
+
+    if "_dateparsefailure" not in [tags] { mutate { remove_field => [ "tmp_timestamp" ] } }
+
+    if "_grokparsefailure" not in [tags] and "_kvparsefailure" not in [tags] {
+      mutate {
+        remove_field => [ "port","type","message","tmp_message","[firewall][log_delay]","[firewall][flags]","[firewall][__policy_id_tag]","[firewall][layer_uuid]","[firewall][logid]","[firewall][loguid]","[firewall][match_id]","[firewall][parent_rule]","[firewall][rule_uid]","[firewall][time]","[firewall][version]" ]
+        add_field => {
+          "ecs.version" => "1.1.0"
+          "observer.type" => "firewall"
+        }
+        rename => {
+          "[firewall][origin]" => "observer.ip"
+          "[firewall][product]" => "observer.product"
+          "[firewall][src]" => "source.ip"
+          "[firewall][s_port]" => "source.port"
+          "[firewall][dst]" => "destination.ip"
+          "[firewall][service]" => "destination.port"
+          "[firewall][action]" => "event.action"
+          "[firewall][proto]" => "network.iana_number"
+          "[firewall][ifdir]" => "network.direction"
+          "[firewall][service_id]" => "network.protocol"
+          "[firewall][inzone]" => "firewall.srczonetype"
+          "[firewall][outzone]" => "firewall.dstzonetype"
+        }
+      }
+    }
+
   }
-  mutate {
-    add_field => { "TMP_timestamp" => "%{chk_date} %{chk_time}" }
-  }
-  date {
-    match => [ "TMP_timestamp", "dMMMyyyy HH:mm:ss" ]
-    remove_field => ["TMP_timestamp"]
-    remove_field => ["chk_date"]
-    remove_field => ["chk_time"]
-  }
- }
+}
