@@ -1,0 +1,7 @@
+#Here is a few examples i have used when building scripting fields in Kibana, nothing much for the eye but sharing is caring.
+
+#Painless script to flag computers (in the winlogbeat index pattern) used by it admins computers, so i can include/exclude them if needed.
+#just copy line 6 and change computer name if you want more computers flagged
+if (doc['winlog.computer_name'].value.contains("COMPUTER1")) { return true;}
+else if (doc['winlog.computer_name'].value.contains("COMPUTER2")) { return true;}
+else { return false; }
