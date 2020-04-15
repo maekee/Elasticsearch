@@ -5,3 +5,10 @@
     tags: [applocker]
     when.equals:
       winlog.provider_name: "Microsoft-Windows-AppLocker"
+
+- drop_event:
+    when:
+      and:
+        - equals.event.code: 8006
+        - equals.winlog.provider_name: "Microsoft-Windows-AppLocker"
+        - contains.winlog.user_data.FilePath: "__PSSCRIPTPOLICYTEST"
