@@ -12,3 +12,14 @@
         - equals.event.code: 8006
         - equals.winlog.provider_name: "Microsoft-Windows-AppLocker"
         - contains.winlog.user_data.FilePath: "__PSSCRIPTPOLICYTEST"
+
+#event_code 4103 AND provider_name "Microsoft-Windows-PowerShell" AND (event_data.Path "Script01.ps1" OR "Script02.ps1")
+
+- drop_event:
+    when:
+      and:
+        - equals.event.code: 4104
+        - equals.winlog.provider_name: "Microsoft-Windows-PowerShell"
+        - or:
+          - equals.winlog.event_data.Path: "C:\\Script\\Script01.ps1"
+          - equals.winlog.event_data.Path: "C:\\Script\\Script02.ps1"
